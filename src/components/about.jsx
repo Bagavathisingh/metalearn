@@ -112,7 +112,7 @@ export default function About() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-2 group/input">
-              <label className="text-[10px] font-black text-indigo-400 uppercase tracking-widest ml-1 transition-all group-focus-within/input:text-white">Subject_Name</label>
+              <label className="text-[10px] font-black text-indigo-400 uppercase tracking-widest ml-1 transition-all group-focus-within/input:text-white">Name</label>
               <input
                 required
                 type="text"

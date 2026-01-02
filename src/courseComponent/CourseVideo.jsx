@@ -9,6 +9,26 @@ export default function Video() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (id === "featured_ai") {
+      setCourse({
+        _id: "featured_ai",
+        subjectTopic: "NEURAL FRONTIERS: THE AI ARCHIVE",
+        videoUrl: "https://www.youtube.com/embed/aircAruvnKk", // Example AI video
+      });
+      setLoading(false);
+      return;
+    }
+
+    if (id?.startsWith("teaser_")) {
+      setCourse({
+        _id: id,
+        subjectTopic: id.replace("teaser_", "").split("_").map(w => w.toUpperCase()).join(" ") + " CORE",
+        videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", // Rickroll for fun or any other default
+      });
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     fetch(`${api}/subjects/${id}`)
       .then((res) => res.json())

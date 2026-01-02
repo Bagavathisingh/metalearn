@@ -5,7 +5,7 @@ import BackendCourseComponent from "../courseComponent/CourseListComponet";
 import { Outlet } from "react-router-dom";
 export default function Course() {
   const location = useLocation();
-    const goTo = (path) => {
+  const goTo = (path) => {
     if (location.pathname !== path) {
       navigate(path);
     }
@@ -13,7 +13,7 @@ export default function Course() {
   };
   return (
     <>
-      <div className="overflow-y-auto hide-scroll overflow-x-hidden">
+      <div className="overflow-y-auto hide-scrollbar overflow-x-hidden">
         <div className="h-180 md:h-150 lg:h-175 flex flex-col justify-between">
           <div className="">
             <div className="h-20 p-3 flex justify-center">
@@ -23,9 +23,9 @@ export default function Course() {
                 </h1> */}
               </div>
             </div>
-            
-            <main className={`w-full hide-scroll ${location.pathname == "home/subject/Subjectdata"?"overflow-y-hidden":"overflow-y-auto"} overflow-x-hidden lg:overflow-x-hidden`}>
-              <Outlet/>
+
+            <main className={`w-full hide-scrollbar ${location.pathname == "home/subject/Subjectdata" ? "overflow-y-hidden" : "overflow-y-auto"} overflow-x-hidden lg:overflow-x-hidden`}>
+              <Outlet />
             </main>
 
           </div>

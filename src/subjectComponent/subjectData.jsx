@@ -11,6 +11,19 @@ export default function SubjectData({ sentId }) {
   const api = import.meta.env.VITE_URL;
 
   useEffect(() => {
+    if (id === "featured_logic") {
+      setSubject({
+        _id: "featured_logic",
+        subjectTopic: "ADVANCED_LOGIC_ARCHIVE",
+        subjectDescription: "Detailed exploration of structural logic flows and computational frameworks used in modern meta-systems.",
+        MaterialPdf: "/featured_logic_materials.pdf",
+        QnPdf: "/featured_logic_papers.pdf",
+        VideoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ" // Example placeholder
+      });
+      setLoading(false);
+      return;
+    }
+
     fetch(`${api}/get_subjects/${id}`)
       .then((res) => res.json())
       .then((data) => {
@@ -27,17 +40,24 @@ export default function SubjectData({ sentId }) {
     return (
       <div className="min-h-[60vh] flex flex-col justify-center items-center gap-6 animate-pulse">
         <div className="w-16 h-16 rounded-full border-4 border-slate-800 border-t-indigo-500 animate-spin"></div>
-        <p className="text-xl font-heading font-bold text-slate-400">Loading Content...</p>
+        <p className="text-xl font-heading font-black text-slate-500 uppercase tracking-widest">Compiling Assets...</p>
       </div>
     );
 
   if (!subject)
     return (
       <div className="min-h-[60vh] flex flex-col justify-center items-center text-center p-8">
-        <div className="glass-card p-12 rounded-3xl space-y-4">
-          <h1 className="text-7xl font-heading font-black text-indigo-500">404</h1>
-          <p className="text-xl text-white font-bold">Subject Not Found</p>
-          <p className="text-slate-400 max-w-xs">The requested content could not be located. Please refresh or try again later.</p>
+        <div className="glass-card p-12 rounded-[3rem] border border-white/5 space-y-6 animate-fade-in">
+          <div className="w-20 h-20 rounded-full bg-red-500/10 flex items-center justify-center mx-auto">
+            <span className="text-red-500 text-3xl font-black">!</span>
+          </div>
+          <div className="space-y-2">
+            <h1 className="text-4xl font-heading font-black text-white">SIGNAL_LOST</h1>
+            <p className="text-slate-500 font-main">The requested data node at <span className="text-indigo-400 font-mono text-xs">#{id}</span> could not be synchronized.</p>
+          </div>
+          <button onClick={() => window.history.back()} className="px-10 py-4 bg-white text-slate-950 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-indigo-500 hover:text-white transition-all">
+            Restore Connection
+          </button>
         </div>
       </div>
     );
