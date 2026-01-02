@@ -1,108 +1,82 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-export default function BackendCourseComponent() {
-  // const [item, setItem] = useState([]);
-  // const [loading, setLoading] = useState(true);
-  // const api = import.meta.env.VITE_URL;
-  // const navigate = useNavigate();
+import maintanace from '.././assets/animation/pngwing.com.png'
 
-  // const handleNavi = (id) => {
-  //   setTimeout(() => {
-  //     navigate("video/" + id);
-  //   }, 1000);
-  // };
-  // const listItems = () => {
-  //   setLoading(true);
-  //   fetch(api + "/subjectsGet")
-  //     .then((res) => res.json())
-  //     .then((res) => {
-  //       setItem(res);
-  //       setLoading(false);
-  //     })
-  //     .catch((err) => {
-  //       console.error("fetch Error :", err);
-  //       setItem([]);
-  //       setLoading(false);
-  //     });
-  // };
-  // useEffect(() => {
-  //   listItems();
-  // }, []);
-  // if (!item) {
-  //   <div className="p-6 ml-15 mt-20 flex flex-col gap-5 mr-10 ">
-  //     <div className="text-7xl text-red-600 flex justify-center">
-  //       <h1>404</h1>
-  //     </div>
-  //     <div className="text-red-500 flex justify-center font-bold">
-  //       Video Not Found Or Failed To Load.
-  //     </div>
-  //   </div>;
-  // }
+export default function BackendCourseComponent() {
   return (
-    // <div className="overflow-x-hidden overflow-y-auto h-full flex w-400 p-7">
-    //   <div className="w-full">
-    //     {loading ? (
-    //       <div className="w-full h-full justify-start ml-18 mt-35 md:mt-10 md:-ml-10 flex md:justify-center md:items-center text-xl font-bold text-orange-500">
-    //         <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-orange-500 border-solid"></div>
-    //         <div className="ml-4 text-3xl font-bold text-orange-500">
-    //           Loading ......
-    //         </div>
-    //       </div>
-    //     ) : (
-    //       <div className="h-full w-full grid md:grid-cols-2 md:w-240 lg:w-full lg:grid-cols-3  gap-10 -ml-2 md:-ml-0">
-    //         {item.map((list) => (
-    //           <div
-    //             key={list._id}
-    //             className=" h-110 w-90 md:w-100 rounded-lg p-1 drop-shadow bg-back cursor-pointer"
-    //             onClick={() => {
-    //               handleNavi(list._id);
-    //             }}
-    //           >
-    //             <div className="h-10 w-30 ml-59 mt-98 md:ml-65 md:mt-97 flex justify-center z-2 absolute">
-    //               <button
-    //                 className="text-[#FF3700] outline-none cursor-pointer hover:text-orange-900 font-bold"
-    //                 onClick={() => handleNavi(list._id)}
-    //               >
-    //                 Show More
-    //               </button>
-    //             </div>
-    //             <div className="h-full p-1 flex flex-col justify-around md:justify-between">
-    //               <div className="select-none w-full h-50 overflow-hidden">
-    //                 <img
-    //                   className="drop-shadow rounded-lg"
-    //                   src={`${api}${list.imageUrl}`}
-    //                   alt={list.subjectTitle}
-    //                 />
-    //               </div>
-    //               <div className="h-46 p-1 flex flex-col gap-1">
-    //                 <div className="h-10 p-1">
-    //                   <h1 className="text-2xl font-bold">
-    //                     {list.subjectTitle}
-    //                   </h1>
-    //                 </div>
-    //                 <div className="h-35">
-    //                   <p className="p-2">{list.content}</p>
-    //                 </div>
-    //               </div>
-    //             </div>
-    //           </div>
-    //         ))}
-    //       </div>
-    //     )}
-    //   </div>
-    // </div>
-    <>
-    <div className="h-155 flex justify-center items-center">
-      <div className=" md:-mt-30 h-100 w-110 flex flex-col items-center justify-center">
-        <div className=" h-20 md:text-3xl text-2xl font-serif flex justify-start items-center font-semibold">
-          <h1 className="invert w-full">This Service Availabe Soon</h1>
+    <div className="animate-fade-in space-y-12">
+      {/* Header Section */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-3">
+          <div className="h-[1px] w-8 bg-indigo-500" />
+          <p className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.4em]">Section_03</p>
         </div>
-        <div className="">
-          <img src={maintanace}  alt="Maintance" className="h-70"/>
+        <h1 className="text-4xl md:text-5xl font-heading font-black text-white uppercase tracking-tighter leading-none">
+          ACADEMY <span className="text-indigo-400">MATRIX</span>
+        </h1>
+      </div>
+
+      {/* Hero Maintenance Card */}
+      <section className="relative group overflow-hidden rounded-[3rem] bg-white/[0.02] border border-white/5 p-8 md:p-16 flex flex-col lg:flex-row items-center gap-12">
+        {/* Abstract Background Elements */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 blur-[120px] -translate-y-1/2 translate-x-1/2 rounded-full pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-violet-500/10 blur-[100px] translate-y-1/2 -translate-x-1/2 rounded-full pointer-events-none" />
+
+        <div className="lg:w-1/2 relative z-10 space-y-8 text-center lg:text-left">
+          <div className="space-y-4">
+            <h2 className="text-3xl md:text-5xl font-heading font-black text-white leading-tight">
+              SYNCHRONIZATION <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-violet-400">IN PROGRESS</span>
+            </h2>
+            <p className="text-slate-500 font-main text-lg leading-relaxed max-w-lg">
+              Our advanced video-based learning modules are currently being deep-synced into the repository. We're finalizing the neural-link protocol for a high-fidelity educational experience.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <div className="px-6 py-3 rounded-xl bg-white/5 border border-white/10 flex items-center gap-3">
+              <div className="w-2 h-2 rounded-full bg-indigo-500 animate-ping" />
+              <span className="text-[10px] font-black text-white uppercase tracking-widest">Compiling Assets</span>
+            </div>
+            <div className="px-6 py-3 rounded-xl bg-white/5 border border-white/10 flex items-center gap-3">
+              <div className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span className="text-[10px] font-black text-white uppercase tracking-widest">Network Stable</span>
+            </div>
+          </div>
         </div>
+
+        <div className="lg:w-1/2 flex justify-center relative">
+          <div className="absolute inset-0 bg-indigo-500/5 blur-3xl rounded-full scale-75 group-hover:scale-100 transition-transform duration-1000" />
+          <img
+            src={maintanace}
+            alt="Coming Soon"
+            className="w-full max-w-[320px] md:max-w-[400px] relative z-10 drop-shadow-2xl transition-all duration-700 group-hover:rotate-3 group-hover:scale-105"
+          />
+          {/* HUD Elements */}
+          <div className="absolute -top-4 -right-4 p-4 font-mono text-[8px] text-indigo-400/30 uppercase leading-tight select-none pointer-events-none border border-white/5 bg-slate-950/20 backdrop-blur-md rounded-xl">
+            DATA_STREAM: ACTIVE<br />
+            PARITY_CHECK: 0.99<br />
+            LATENCY: 2.4MS
+          </div>
+        </div>
+      </section>
+
+      {/* Teaser Modules */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 opacity-40 grayscale pointer-events-none">
+        {[
+          { title: "Quantum Computing", type: "Expert" },
+          { title: "Neural Networks", type: "Advanced" },
+          { title: "Meta Architecture", type: "Core" },
+          { title: "System Security", type: "Essential" }
+        ].map((mod, i) => (
+          <div key={i} className="p-6 rounded-2xl bg-white/[0.01] border border-white/5 space-y-4">
+            <div className="w-full aspect-video bg-white/[0.03] rounded-lg" />
+            <div className="space-y-1">
+              <p className="text-[8px] font-black text-indigo-500 tracking-widest uppercase">{mod.type}</p>
+              <h4 className="text-sm font-black text-white uppercase">{mod.title}</h4>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
-    </>
   );
 }
-import maintanace from '.././assets/animation/pngwing.com.png'
+

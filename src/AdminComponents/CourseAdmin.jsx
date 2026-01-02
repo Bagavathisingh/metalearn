@@ -1,5 +1,5 @@
-import pic from "../assets/javascript.png";
 import { useState, useRef, useEffect } from "react";
+import { useNotification } from "../components/Notification";
 
 export default function CourseAdmin() {
   const [subjectTopic, setSubjectTopic] = useState("");
@@ -7,14 +7,16 @@ export default function CourseAdmin() {
   const [videoUrl, setVideoUrl] = useState("");
   const [subImage, setSubImage] = useState(null);
   const [item, setItem] = useState([]);
-  const subImageRef = useRef(null);
-  const materialPdfRef = useRef(null);
-  const [loading,setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
 
+  const subImageRef = useRef(null);
   const api = import.meta.env.VITE_URL;
+  const notify = useNotification();
 
   const handleUpload = async (e) => {
     e.preventDefault();
+    setIsUploading(true);
     const formData = new FormData();
     formData.append("videoUrl", videoUrl);
     formData.append("subjectTitle", subjectTopic);
@@ -27,31 +29,35 @@ export default function CourseAdmin() {
         body: formData,
       });
 
-      const data = await response.json();
-      alert("Subject uploaded successfully!");
+      if (!response.ok) throw new Error("Upload response not OK");
+
+      notify("Course module synchronization successful.", "success");
 
       setSubjectTopic("");
       setSubjectDescription("");
       setVideoUrl("");
       setSubImage(null);
-      setMaterialPdf(null);
-      subImageRef.current.value = null;
-      materialPdfRef.current.value = null;
+      if (subImageRef.current) subImageRef.current.value = null;
+      listItems();
     } catch (err) {
       console.error("Upload error:", err);
-      alert("Upload failed.");
+      notify("Upload protocol failed.", "error");
+    } finally {
+      setIsUploading(false);
     }
   };
 
   const listItems = () => {
     fetch(api + "/subjectsGet")
       .then((res) => res.json())
-      .then((res) => {setItem(res);
-           setLoading(false)})
+      .then((res) => {
+        setItem(res);
+        setLoading(false);
+      })
       .catch((err) => {
         console.error("fetch Error :", err);
         setItem([]);
-         setLoading(false);
+        setLoading(false);
       });
   };
 
@@ -59,124 +65,141 @@ export default function CourseAdmin() {
     listItems();
   }, []);
 
-
   if (loading)
     return (
-      <div className="h-100 p-10">
-        <div className="h-full flex justify-center items-center gap-10">
-          <div className="h-15 animate-spin w-15 rounded-full border-t-4 border-[#FF3700]"></div>
-          <div className="text-2xl font-bold">
-            <h1>Loading ........ </h1>
-          </div>
-        </div>
+      <div className="min-h-[60vh] flex flex-col justify-center items-center gap-6 animate-pulse">
+        <div className="w-16 h-16 rounded-full border-4 border-white/5 border-t-cyan-500 animate-spin"></div>
+        <p className="text-xl font-heading font-black text-slate-500 uppercase tracking-widest">Accessing Asset Pipeline...</p>
       </div>
     );
 
   return (
-    <div className="h-full p-2">
-      <div className="flex gap-5 p-1 h-full">
-        <div className="p-2 w-150 h-full">
-          <form onSubmit={handleUpload} className="h-full p-15 flex flex-col">
-            <div className="h-140 flex flex-col justify-between p-5">
-              <input
-                type="file"
-                accept="image/*"
-                className="w-full p-4 bg-[#FFC477] text-orange-600 rounded-lg drop-shadow"
-                ref={subImageRef}
-                onChange={(e) => setSubImage(e.target.files[0])}
-                required
-              />
-              <input
-                type="text"
-                className="w-full p-4 bg-[#FFC477] text-orange-600 text-xl rounded-lg placeholder:text-[15px] placeholder:text-red-500 drop-shadow focus:placeholder-transparent"
-                value={subjectTopic}
-                placeholder="Enter Course Topic"
-                onChange={(e) => setSubjectTopic(e.target.value)}
-                required
-              />
-              <input
-                type="text"
-                className="w-full p-4 bg-[#FFC477] text-orange-600 text-xl rounded-lg placeholder:text-[15px] placeholder:text-red-500 drop-shadow focus:placeholder-transparent"
-                value={videoUrl}
-                placeholder="Enter Course VideoUrl"
-                onChange={(e) => setVideoUrl(e.target.value)}
-                required
-              />
-              <input
-                type="text"
-                className="w-full p-4 bg-[#FFC477] text-orange-600 text-xl rounded-lg placeholder:text-[15px] placeholder:text-red-500 drop-shadow focus:placeholder-transparent"
-                value={subjectDescription}
-                placeholder="Enter the Content About This Course"
-                onChange={(e) => setSubjectDescription(e.target.value)}
-                required
-              />
+    <div className="animate-fade-in space-y-12">
+      <div className="grid grid-cols-1 xl:grid-cols-[450px_1fr] gap-12 items-start">
+
+        {/* Course Injector */}
+        <div className="space-y-8">
+          <div className="space-y-1">
+            <h3 className="text-xl font-heading font-black text-white uppercase tracking-tight">Course_Injector</h3>
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Deploy Premium Academy Modules</p>
+          </div>
+
+          <form onSubmit={handleUpload} className="p-8 rounded-[2.5rem] bg-white/[0.02] border border-white/5 space-y-6 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-6 opacity-5 font-mono text-[8px] text-white select-none">
+              DATA_ENCODING: ACTIVE<br />
+              SYNC_CHANNEL: COURSE_01
             </div>
 
-            <div className="h-20 flex p-5">
-              <button
-                type="submit"
-                className="border h-10 uppercase w-full rounded-lg text-xl bg-red-500 text-white"
-              >
-                Upload
-              </button>
+            <div className="space-y-4">
+              <div className="space-y-1 group/input">
+                <label className="text-[10px] font-black text-cyan-500 uppercase tracking-[0.2em] ml-1 transition-all group-focus-within/input:text-white">Cover_Asset</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  ref={subImageRef}
+                  className="w-full text-[10px] text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:bg-white/5 file:text-white hover:file:bg-cyan-500/10 cursor-pointer"
+                  onChange={(e) => setSubImage(e.target.files[0])}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2 group/input">
+                <label className="text-[10px] font-black text-cyan-500 uppercase tracking-[0.2em] ml-1 transition-all group-focus-within/input:text-white">Module_Title</label>
+                <input
+                  required
+                  type="text"
+                  placeholder="e.g. Advanced JavaScript Patterns"
+                  value={subjectTopic}
+                  className="w-full bg-white/[0.03] border-b border-white/10 p-4 text-white outline-none focus:border-cyan-500 focus:bg-white/[0.06] transition-all rounded-t-xl"
+                  onChange={(e) => setSubjectTopic(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2 group/input">
+                <label className="text-[10px] font-black text-cyan-500 uppercase tracking-[0.2em] ml-1 transition-all group-focus-within/input:text-white">Stream_URL</label>
+                <input
+                  required
+                  type="text"
+                  placeholder="https://vimeo.com/..."
+                  value={videoUrl}
+                  className="w-full bg-white/[0.03] border-b border-white/10 p-4 text-white outline-none focus:border-cyan-500 focus:bg-white/[0.06] transition-all rounded-t-xl"
+                  onChange={(e) => setVideoUrl(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2 group/input">
+                <label className="text-[10px] font-black text-cyan-500 uppercase tracking-[0.2em] ml-1 transition-all group-focus-within/input:text-white">Module_Overview</label>
+                <textarea
+                  required
+                  rows="3"
+                  placeholder="Input course curriculum summary..."
+                  value={subjectDescription}
+                  className="w-full bg-white/[0.03] border-b border-white/10 p-4 text-white outline-none focus:border-cyan-500 focus:bg-white/[0.06] transition-all rounded-t-xl resize-none"
+                  onChange={(e) => setSubjectDescription(e.target.value)}
+                ></textarea>
+              </div>
             </div>
+
+            <button
+              type="submit"
+              disabled={isUploading}
+              className="w-full py-5 bg-cyan-500 text-black font-black uppercase text-xs tracking-[0.3em] rounded-2xl hover:bg-white transition-all active:scale-95 disabled:opacity-50 shadow-[0_0_20px_rgba(34,211,238,0.2)]"
+            >
+              {isUploading ? "PROCESS_SYNC..." : "DEPLOY_COURSE"}
+            </button>
           </form>
         </div>
 
-        {/* Right Side Preview */}
-        <div className="p-1 w-250">
-          <div className="drop-shadow p-1 h-full rounded-lg">
-            <div className="text-5xl font-serif uppercase flex justify-center p-1">
-              <h1>Courses</h1>
+        {/* List Interface */}
+        <div className="space-y-8">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <h3 className="text-xl font-heading font-black text-white uppercase tracking-tight">Academic_Inventory</h3>
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Existing Course Asset Modules</p>
             </div>
-            <div className="h-145 p-10 rounded-lg grid gap-20 hide-scroll overflow-y-auto">
-              {item.map((list, index) => (
-                <div
-                  key={index}
-                  className="h-100 rounded-lg m-5 p-3 bg-[#FFC477] drop-shadow flex flex-col justify-between"
-                >
-                  <div className="w-full rounded-lg ">
-                    <div className="flex p-1 gap-5 h-40">
-                      <div className="drop-shadow rounded-lg overflow-hidden object-cover w-full">
-                        <img
-                          src={`${api}${list.imageUrl}`}
-                          alt={list.subjectTitle}
-                          className="h-full w-full"
-                        />
-                      </div>
-                      <div className="border rounded-lg flex justify-center items-center w-full">
-                        <div
-                          className={`border rounded-full p-1 ${
-                            list.videoUrl !=null ? "bg-green-500" : "bg-red-600"
-                          } h-4 w-4`}
-                        >
-                          <div className="h-full rounded-full bg-white w-full"></div>
-                        </div>
-                        <div className="ml-4 font-serif font-semibold">
-                          {list.videoUrl != null ? <h1>Available</h1> : <h1>UnAvailable</h1>}
-                        </div>
-                      </div>
+            <div className="px-4 py-2 rounded-xl bg-cyan-500/5 border border-cyan-500/20 text-cyan-400 font-mono text-xs">
+              ASSETS: {item.length}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-h-[800px] overflow-y-auto custom-scroll pr-4">
+            {item.map((list, index) => (
+              <div key={index} className="group p-8 rounded-[2.5rem] bg-white/[0.02] border border-white/5 space-y-6 flex flex-col justify-between hover:border-cyan-500/30 transition-all duration-500 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-6 opacity-5 font-mono text-[8px] text-white">MOD_{index + 101}</div>
+
+                <div className="space-y-6">
+                  <div className="aspect-video w-full rounded-2xl overflow-hidden border border-white/5 shadow-2xl relative">
+                    <img src={`${api}${list.imageUrl}`} alt={list.subjectTitle} className="w-full h-full object-cover grayscale brightness-50 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-1000" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-6">
+                      <h4 className="text-xl font-black text-white uppercase tracking-tighter leading-none">{list.subjectTitle}</h4>
                     </div>
                   </div>
-                  <div className="h-full p-2 flex gap-5 rounded-lg">
-                    <div className="border-r-2 flex flex-col gap-5 p-3 w-70">
-                      <div className="border rounded-lg flex justify-center items-center text-md uppercase h-full">
-                        <h1>{list.subjectTitle}</h1>
-                      </div>
-                      <div className="border flex justify-center items-center  text-sm rounded-lg h-full">
-                        <h1 className="text-[10px] p-2">{list.content}</h1>
-                      </div>
+
+                  <div className="flex flex-wrap gap-3">
+                    <div className={`px-3 py-1.5 rounded-xl text-[8px] font-black uppercase tracking-widest flex items-center gap-2 ${list.videoUrl != null ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-red-500/10 text-red-500 border border-red-500/20"}`}>
+                      <div className={`w-1.5 h-1.5 rounded-full ${list.videoUrl != null ? "bg-emerald-500" : "bg-red-500"}`} />
+                      {list.videoUrl != null ? "Stream_Live" : "No_Stream"}
                     </div>
-                    <div className="border w-full rounded-lg p-3 leading-relaxed">
-                      {list.videoContent}
+                    <div className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/5 text-[8px] font-black text-slate-400 uppercase tracking-widest">
+                      Asset_Class: S
                     </div>
                   </div>
+
+                  <p className="text-[11px] text-slate-500 leading-relaxed line-clamp-3 italic">
+                    "{list.content}"
+                  </p>
                 </div>
-              ))}
-            </div>
+
+                <div className="pt-4 border-t border-white/5 flex items-center justify-between text-[8px] font-black text-slate-600 uppercase tracking-[0.2em]">
+                  <span>Registry_Lock: Active</span>
+                  <span className="text-cyan-500/50">Verified_Integrity</span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
     </div>
   );
 }
+

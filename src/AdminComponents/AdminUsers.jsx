@@ -5,87 +5,76 @@ import { db } from "../../firebaseConfig";
 export default function UsersAdmin() {
   const [users, setUsers] = useState([]);
   const [Auth, setAuth] = useState([]);
-  const [userLoad,setuserLoad] = useState(true);
+  const [userLoad, setuserLoad] = useState(true);
   const api = import.meta.env.VITE_URL;
 
   const fetchUsers = async () => {
-    const querySnapshot = await getDocs(collection(db, "feedback"));
-    const usersData = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    setUsers(usersData);
+    try {
+      const querySnapshot = await getDocs(collection(db, "feedback"));
+      const usersData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setUsers(usersData);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   useEffect(() => {
     fetchUsers();
-  }, []);
-
-  useEffect(() => {
     fetch(`${api}/auth-users`)
       .then((res) => res.json())
       .then((data) => {
         setAuth(data);
         setuserLoad(false);
       })
-      .catch((err) => console.error(err));
-  }, []);
+      .catch((err) => {
+        console.error(err);
+        setuserLoad(false);
+      });
+  }, [api]);
 
   if (userLoad)
     return (
-      <div className="h-100 p-10">
-        <div className="h-full flex justify-center items-center gap-10">
-          <div className="h-15 animate-spin w-15 rounded-full border-t-4 border-[#FF3700]"></div>
-          <div className="text-2xl font-bold">
-            <h1>Loading ........ </h1>
-          </div>
-        </div>
+      <div className="min-h-[60vh] flex flex-col justify-center items-center gap-6 animate-pulse">
+        <div className="w-16 h-16 rounded-full border-4 border-white/5 border-t-cyan-500 animate-spin"></div>
+        <p className="text-xl font-heading font-black text-slate-500 uppercase tracking-widest">Scanning Databases...</p>
       </div>
     );
+
   return (
-    <>
-      <div className="flex justify-between gap-10 p-1 h-full">
-        {/* User list container */}
-        <div className="drop-shadow p-1 w-160 rounded-[10px] h-full">
-          <div className="text-5xl font-serif flex justify-center uppercase p-1">
-            <h1>Users</h1>
+    <div className="animate-fade-in space-y-12">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
+
+        {/* User Statistics & List */}
+        <div className="space-y-8">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <h3 className="text-xl font-heading font-black text-white uppercase tracking-tight">Identity_Registry</h3>
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Authenticated Network Users</p>
+            </div>
+            <div className="px-4 py-2 rounded-xl bg-cyan-500/5 border border-cyan-500/20 text-cyan-400 font-mono text-xs">
+              COUNT: {Array.isArray(Auth) ? Auth.length : 0}
+            </div>
           </div>
-          <div className="flex flex-col h-150 hide-scroll overflow-y-auto rounded-[10px] p-2">
-            {
-              userLoad
-            }
-            {/* Dynamic User Cards */}
-            {Array.isArray(Auth) &&Auth.map((user, index) => (
-              <div
-                key={index}
-                className="drop-shadow h-30 p-3 rounded-[10px] bg-[#FFC477] mb-3"
-              >
-                <div className="flex gap-5 h-full">
-                  <div className="border-r-1 w-full p-1">
-                    <div className="border-b-1 h-10">
-                      <h1 className="flex justify-center uppercase mt-1">
-                        username
-                      </h1>
+
+          <div className="space-y-4 max-h-[600px] overflow-y-auto custom-scroll pr-4">
+            {Array.isArray(Auth) && Auth.map((user, index) => (
+              <div key={index} className="group p-6 rounded-3xl bg-white/[0.02] border border-white/5 hover:border-cyan-500/30 transition-all duration-300">
+                <div className="flex items-center justify-between gap-6">
+                  <div className="flex items-center gap-6">
+                    <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center font-black text-slate-400 group-hover:bg-cyan-500/10 group-hover:text-cyan-400 transition-colors">
+                      {user.Email?.charAt(0).toUpperCase()}
                     </div>
-                    <span className="p-1">{user.Email}</span>
+                    <div className="space-y-1">
+                      <p className="text-sm font-black text-white">{user.Email}</p>
+                      <p className="text-[10px] text-slate-500 font-mono">UID: {user.id || 'N/A'}</p>
+                    </div>
                   </div>
-                  <div className="border-r-1  p-1">
-                    <div className="border-b-1 h-10">
-                      <h1 className="flex justify-center uppercase mt-1">
-                        password
-                      </h1>
-                    </div>
-                    <span className="p-1">.............</span>
-                  </div>
-                  <div className="border-r-1 w-full p-1">
-                    <div className="border-b-1 h-10">
-                      <h1 className="flex justify-center uppercase mt-1">
-                        created At
-                      </h1>
-                    </div>
-                    <span className="p-1">
-                      {user.CreatedAt ? user.CreatedAt : "N/A"}
-                    </span>
+                  <div className="hidden md:flex flex-col items-end gap-1">
+                    <span className="text-[8px] text-slate-500 uppercase font-black tracking-widest">Authorized_On</span>
+                    <span className="text-[10px] font-mono text-emerald-500/60">{user.CreatedAt || "GEN-01"}</span>
                   </div>
                 </div>
               </div>
@@ -93,43 +82,46 @@ export default function UsersAdmin() {
           </div>
         </div>
 
-        {/* Feedback Container */}
-        <div className="p-1 w-250">
-          <div className="drop-shadow p-1 h-full overflow-hidden rounded-lg">
-            <div className="text-5xl font-serif flex justify-center p-1">
-              <h1>FEEDBACK</h1>
+        {/* Feedback Records */}
+        <div className="space-y-8">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <h3 className="text-xl font-heading font-black text-white uppercase tracking-tight">Transmission_Logs</h3>
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">User Sentiment & Feedback Data</p>
             </div>
-              <div className="h-149 p-10 rounded-lg overflow-y-auto hide-scroll ">
-                {/* Dynamic Feedback Cards */}
-                {Array.isArray(users) && users.map((user, index) => (
-                  <div
-                    key={index}
-                    className="h-60 rounded-lg p-3 bg-[#FFC477] drop-shadow flex gap-10 justify-between mb-5"
-                  >
-                    <div className="h-full w-90 rounded-lg flex flex-col p-1 gap-1 justify-between">
-                      <div className="drop-shadow rounded-lg flex flex-col justify-center items-center gap-10 h-full">
-                        <h1 className="flex text-xl justify-center mt-1 border-b-1 border-gray-800 w-50">
-                          NAME OF USER
-                        </h1>
-                        <span className="-mt-5">{user.Name}</span>
-                      </div>
-                      <div className="drop-shadow rounded-lg flex flex-col justify-center items-center gap-10 h-full">
-                        <h1 className="flex text-xl justify-center mt-1 border-b-1 border-gray-800 w-50">
-                          DEPT OF USER
-                        </h1>
-                        <span className="-mt-5">{user.Dept}</span>
-                      </div>
-                    </div>
-                    <div className="drop-shadow p-5 w-full rounded-lg">
-                      <p className="h-full font-semibold">{user.Feedback}</p>
-                    </div>
+            <div className="px-4 py-2 rounded-xl bg-violet-500/5 border border-violet-500/20 text-violet-400 font-mono text-xs">
+              LOGS: {Array.isArray(users) ? users.length : 0}
+            </div>
+          </div>
+
+          <div className="space-y-6 max-h-[600px] overflow-y-auto custom-scroll pr-4">
+            {Array.isArray(users) && users.map((user, index) => (
+              <div key={index} className="p-8 rounded-[2rem] bg-white/[0.03] border border-white/5 space-y-6 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-4 opacity-5 font-mono text-[8px] text-white">REF_{index + 100}</div>
+
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 text-indigo-400 font-black text-xs">
+                    {user.Name?.charAt(0)}
                   </div>
-                ))}
-                {/* End of feedback card */}
+                  <div>
+                    <p className="text-sm font-black text-white uppercase tracking-tight">{user.Name}</p>
+                    <p className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest">{user.Dept}</p>
+                  </div>
+                </div>
+
+                <div className="p-6 rounded-2xl bg-black/40 border border-white/5 italic text-slate-400 text-sm leading-relaxed font-main">
+                  "{user.Feedback}"
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Stored_in_Vault_01</span>
+                </div>
               </div>
+            ))}
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
+

@@ -1,5 +1,6 @@
-import { useState, useRef } from "react";
-import { useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useNotification } from "../components/Notification";
+
 export default function SubjectAdmin() {
   const [subjectTopic, setSubjectTopic] = useState("");
   const [subjectDescription, setSubjectDescription] = useState("");
@@ -7,15 +8,20 @@ export default function SubjectAdmin() {
   const [subImage, setSubImage] = useState(null);
   const [materialPdf, setMaterialPdf] = useState(null);
   const [qnPdf, setQnPdf] = useState(null);
-  const [item,setItem] = useState([]);
+  const [item, setItem] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
+
   const subImageRef = useRef(null);
   const materialPdfRef = useRef(null);
   const qnPdfRef = useRef(null);
-  const [loading,setLoading] = useState(true);
+
   const api = import.meta.env.VITE_URL;
+  const notify = useNotification();
 
   const handleUpload = async (e) => {
     e.preventDefault();
+    setIsUploading(true);
     const formData = new FormData();
     formData.append("subjectTopic", subjectTopic);
     formData.append("subjectDescription", subjectDescription);
@@ -30,8 +36,9 @@ export default function SubjectAdmin() {
         body: formData,
       });
 
-      const data = await response.json();
-      alert("Subject uploaded successfully!");
+      if (!response.ok) throw new Error("Upload response not OK");
+
+      notify("Subject asset synchronization complete.", "success");
 
       setSubjectTopic("");
       setSubjectDescription("");
@@ -39,171 +46,174 @@ export default function SubjectAdmin() {
       setSubImage(null);
       setMaterialPdf(null);
       setQnPdf(null);
-      subImageRef.current.value = null;
-      materialPdfRef.current.value = null;
-      qnPdfRef.current.value = null;
+      if (subImageRef.current) subImageRef.current.value = null;
+      if (materialPdfRef.current) materialPdfRef.current.value = null;
+      if (qnPdfRef.current) qnPdfRef.current.value = null;
+      listItems();
     } catch (err) {
       console.error("Upload error:", err);
-      alert("Upload failed.");
+      notify("Upload protocol failed.", "error");
+    } finally {
+      setIsUploading(false);
     }
   };
 
-   const listItems = () => {
-      fetch(api + "/get-subjects")
-        .then((res) => res.json())
-        .then((res) => {
-          setItem(res);
-          setLoading(false);
-        })
-        .catch((err) => {
-          console.error("fetch Error :", err);
-          setItem([]);
-          setLoading(false);
-        });
-    };
-  
-    useEffect(() => {
-      listItems();
-    }, []);
+  const listItems = () => {
+    fetch(api + "/get-subjects")
+      .then((res) => res.json())
+      .then((res) => {
+        setItem(res);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("fetch Error :", err);
+        setItem([]);
+        setLoading(false);
+      });
+  };
 
-if (loading)
+  useEffect(() => {
+    listItems();
+  }, []);
+
+  if (loading)
     return (
-      <div className="h-100 p-10">
-        <div className="h-full flex justify-center items-center gap-10">
-          <div className="h-15 animate-spin w-15 rounded-full border-t-4 border-[#FF3700]"></div>
-          <div className="text-2xl font-bold">
-            <h1>Loading ........ </h1>
-          </div>
-        </div>
+      <div className="min-h-[60vh] flex flex-col justify-center items-center gap-6 animate-pulse">
+        <div className="w-16 h-16 rounded-full border-4 border-white/5 border-t-cyan-500 animate-spin"></div>
+        <p className="text-xl font-heading font-black text-slate-500 uppercase tracking-widest">Accessing Logic Matrix...</p>
       </div>
     );
+
   return (
-    <div className="h-full p-2">
-      <div className="flex gap-5 p-1 h-full">
-        <div className="drop-shadow p-2 w-150 h-full">
-          <form onSubmit={handleUpload} className="h-full flex flex-col">
-            <div className="h-140 flex flex-col justify-between p-5">
-              <input
-                type="text"
-                className="w-full p-4 bg-[#FFC477] text-orange-600 text-xl rounded-lg placeholder:text-[15px] placeholder:text-red-500 drop-shadow focus:placeholder-transparent focus"
-                value={subjectTopic}
-                placeholder="Enter Subject Topic"
-                onChange={(e) => setSubjectTopic(e.target.value)}
-                required
-              />
-              <input
-                type="text"
-                className="w-full p-4 bg-[#FFC477] text-orange-600 text-xl rounded-lg placeholder:text-[15px] placeholder:text-red-500 drop-shadow focus:placeholder-transparent"
-                value={videoUrl}
-                placeholder="Enter Subject VideoUrl"
-                onChange={(e) => setVideoUrl(e.target.value)}
-                required
-              />
-              <input
-                type="text"
-                className="w-full p-4 bg-[#FFC477] text-orange-600 text-xl rounded-lg placeholder:text-[15px] placeholder:text-red-500 drop-shadow focus:placeholder-transparent"
-                value={subjectDescription}
-                placeholder="Enter Subject Description"
-                onChange={(e) => setSubjectDescription(e.target.value)}
-                required
-              />
-              <input
-                type="file"
-                accept="image/*"
-                className="w-full p-4 bg-[#FFC477] text-orange-600 rounded-lg drop-shadow"
-                ref={subImageRef}
-                onChange={(e) => setSubImage(e.target.files[0])}
-                required
-              />
-              <input
-                type="file"
-                accept="application/pdf"
-                className="w-full p-4 bg-[#FFC477] text-orange-600 rounded-lg drop-shadow"
-                ref={materialPdfRef}
-                onChange={(e) => setMaterialPdf(e.target.files[0])}
-                required
-              />
-              <input
-                type="file"
-                accept="application/pdf"
-                className="w-full p-4 bg-[#FFC477] text-orange-600 rounded-lg drop-shadow"
-                ref={qnPdfRef}
-                onChange={(e) => setQnPdf(e.target.files[0])}
-                required
-              />
+    <div className="animate-fade-in space-y-12">
+      <div className="grid grid-cols-1 xl:grid-cols-[450px_1fr] gap-12 items-start">
+
+        {/* Upload Form: Asset Injector */}
+        <div className="space-y-8">
+          <div className="space-y-1">
+            <h3 className="text-xl font-heading font-black text-white uppercase tracking-tight">Asset_Injector</h3>
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Deploy New Subject Modules</p>
+          </div>
+
+          <form onSubmit={handleUpload} className="p-8 rounded-[2.5rem] bg-white/[0.02] border border-white/5 space-y-6 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-6 opacity-5 font-mono text-[8px] text-white select-none">
+              ENCRYPTING_UPLOAD...<br />
+              MIME_VALIDATION: ON
             </div>
 
-            <div className="h-20 flex p-5">
-              <button
-                type="submit"
-                className="border h-10 uppercase w-full rounded-lg text-xl bg-red-500 text-white"
-              >
-                Upload
-              </button>
+            <div className="space-y-4">
+              <div className="space-y-2 group/input">
+                <label className="text-[10px] font-black text-cyan-500 uppercase tracking-[0.2em] ml-1 transition-all group-focus-within/input:text-white">Subject_Topic</label>
+                <input
+                  required
+                  type="text"
+                  placeholder="e.g. Quantum Mechanics"
+                  value={subjectTopic}
+                  className="w-full bg-white/[0.03] border-b border-white/10 p-4 text-white outline-none focus:border-cyan-500 focus:bg-white/[0.06] transition-all rounded-t-xl"
+                  onChange={(e) => setSubjectTopic(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2 group/input">
+                <label className="text-[10px] font-black text-cyan-500 uppercase tracking-[0.2em] ml-1 transition-all group-focus-within/input:text-white">Video_Link</label>
+                <input
+                  required
+                  type="text"
+                  placeholder="https://youtube.com/..."
+                  value={videoUrl}
+                  className="w-full bg-white/[0.03] border-b border-white/10 p-4 text-white outline-none focus:border-cyan-500 focus:bg-white/[0.06] transition-all rounded-t-xl"
+                  onChange={(e) => setVideoUrl(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2 group/input">
+                <label className="text-[10px] font-black text-cyan-500 uppercase tracking-[0.2em] ml-1 transition-all group-focus-within/input:text-white">Dossier_Description</label>
+                <textarea
+                  required
+                  rows="3"
+                  placeholder="Input subject specifications..."
+                  value={subjectDescription}
+                  className="w-full bg-white/[0.03] border-b border-white/10 p-4 text-white outline-none focus:border-cyan-500 focus:bg-white/[0.06] transition-all rounded-t-xl resize-none"
+                  onChange={(e) => setSubjectDescription(e.target.value)}
+                ></textarea>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[8px] font-black text-slate-500 uppercase tracking-widest ml-1">Cover_Image</label>
+                  <input type="file" accept="image/*" ref={subImageRef} onChange={(e) => setSubImage(e.target.files[0])} required className="w-full text-[10px] text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:bg-white/5 file:text-white hover:file:bg-cyan-500/10 cursor-pointer" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[8px] font-black text-slate-500 uppercase tracking-widest ml-1">Resource_PDF</label>
+                  <input type="file" accept="application/pdf" ref={materialPdfRef} onChange={(e) => setMaterialPdf(e.target.files[0])} required className="w-full text-[10px] text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:bg-white/5 file:text-white hover:file:bg-cyan-500/10 cursor-pointer" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[8px] font-black text-slate-500 uppercase tracking-widest ml-1">Question_Bank_PDF</label>
+                  <input type="file" accept="application/pdf" ref={qnPdfRef} onChange={(e) => setQnPdf(e.target.files[0])} required className="w-full text-[10px] text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:bg-white/5 file:text-white hover:file:bg-cyan-500/10 cursor-pointer" />
+                </div>
+              </div>
             </div>
+
+            <button
+              type="submit"
+              disabled={isUploading}
+              className="w-full py-5 bg-cyan-500 text-black font-black uppercase text-xs tracking-[0.3em] rounded-2xl hover:bg-white transition-all active:scale-95 disabled:opacity-50 shadow-[0_0_20px_rgba(34,211,238,0.2)]"
+            >
+              {isUploading ? "INJECTING..." : "EXECUTE_DEPLOYMENT"}
+            </button>
           </form>
         </div>
 
-        {/* Right Side Preview Card (unchanged) */}
-        <div className="p-1 w-250">
-          <div className="drop-shadow p-1 h-full rounded-lg">
-            <div className="text-5xl font-serif uppercase flex justify-center p-1">
-              <h1>Subjects</h1>
+        {/* List Interface: Current Matrix */}
+        <div className="space-y-8">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <h3 className="text-xl font-heading font-black text-white uppercase tracking-tight">Active_Matrix</h3>
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Existing Logical Subject Structures</p>
             </div>
-            <div className="h-145 p-10 rounded-lg grid gap-20 hide-scroll overflow-y-auto">
-                {
-                    item.map((list,index)=>(
-              <div key={index} className="h-100 rounded-lg m-5 p-3 bg-[#FFC477] drop-shadow flex flex-col justify-between">
-                <div className="w-full rounded-lg ">
-                  <div className="flex p-1 gap-5 h-40">
-                    <div className="drop-shadow rounded-lg overflow-hidden object-cover w-full">
-                      <img src={`${api}${list.subImageUrl}`}
-                  alt={list.subjectTitle} className="h-full w-full" />
-                    </div>
-                    <div className="border rounded-lg flex justify-center items-center w-full">
-                      <div className={`border rounded-full p-1 ${list.MaterialPdf ? "bg-green-500":"bg-red-600"} h-4 w-4`}>
-                        <div className="h-full rounded-full bg-white w-full ">
-
-                        </div>
-                      </div>
-                      <div className="ml-4 font-serif font-semibold">
-                        {
-                            list.MaterialPdf ?<><h1>Available</h1></>:<h1>UnAvailable</h1>
-                        }
-                      </div>
-                    </div>
-                    <div className="border rounded-lg flex justify-center items-center w-full">
-                      <div className={`border rounded-full p-1 ${list.MaterialPdf? "bg-green-500":"bg-red-600"} h-4 w-4`}>
-                        <div className="h-full w-full rounded-full bg-white ">
-
-                        </div>
-                      </div>
-                      <div className="ml-4 font-serif font-semibold">
-                        <h1>Available</h1>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="h-full p-2 flex gap-5 rounded-lg">
-                  <div className="border-r-2 flex flex-col gap-5 p-3 w-70">
-                    <div className="border rounded-lg flex justify-center items-center text-md uppercase h-full">
-                      <h1>{list.subjectTopic}</h1>
-                    </div>
-                    <div className="border flex justify-center items-center text-sm rounded-lg h-full">
-                      <h1>{list.VideoUrl}</h1>
-                    </div>
-                  </div>
-                  <div className="border w-full rounded-lg p-5 leading-relaxed">
-                    {list.subjectDescription}
-                  </div>
-                </div>
-              </div>
-                    ))
-                }
+            <div className="px-4 py-2 rounded-xl bg-cyan-500/5 border border-cyan-500/20 text-cyan-400 font-mono text-xs">
+              NODES: {item.length}
             </div>
           </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-h-[800px] overflow-y-auto custom-scroll pr-4">
+            {item.map((list, index) => (
+              <div key={index} className="group p-6 rounded-3xl bg-white/[0.02] border border-white/5 space-y-6 flex flex-col justify-between hover:border-cyan-500/30 transition-all duration-500 animate-fade-in relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-4 opacity-5 font-mono text-[8px] text-white">ID_{list._id?.slice(-4)}</div>
+
+                <div className="flex gap-6">
+                  <div className="w-24 h-24 rounded-2xl overflow-hidden border border-white/5 flex-shrink-0 shadow-xl">
+                    <img src={`${api}${list.subImageUrl}`} alt={list.subjectTopic} className="w-full h-full object-cover grayscale brightness-75 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-700" />
+                  </div>
+                  <div className="space-y-2 py-1">
+                    <h4 className="text-lg font-black text-white uppercase leading-tight group-hover:text-cyan-400 transition-colors">{list.subjectTopic}</h4>
+                    <div className="flex gap-2">
+                      <div className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${list.MaterialPdf ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-red-500/10 text-red-500 border border-red-500/20"}`}>
+                        {list.MaterialPdf ? "PDF_LOADED" : "PDF_MISSING"}
+                      </div>
+                      <div className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${list.videoUrl || list.VideoUrl ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20" : "bg-red-500/10 text-red-500 border border-red-500/20"}`}>
+                        {list.videoUrl || list.VideoUrl ? "SIG_STABLE" : "SIG_LOST"}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-xl bg-black/40 border border-white/5">
+                  <p className="text-[10px] text-slate-500 leading-relaxed line-clamp-2">
+                    {list.subjectDescription}
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between text-[8px] font-black text-slate-600 uppercase tracking-widest pt-2">
+                  <span>Node_{index + 1}</span>
+                  <span>Registry: Internal</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>  
+      </div>
     </div>
   );
 }
+
