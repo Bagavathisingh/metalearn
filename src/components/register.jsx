@@ -118,7 +118,6 @@ export default function Register() {
                                     disabled={loading}
                                     className="w-full group/btn relative overflow-hidden bg-white text-slate-950 py-5 rounded-2xl font-black uppercase text-sm tracking-widest transition-all hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,255,255,0.3)] disabled:opacity-50"
                                 >
-                                    <span className="relative z-10">{loading ? "Generating..." : "Generate Identity"}</span>
                                     <div className="absolute inset-0 bg-gradient-to-r from-violet-500 to-indigo-500 opacity-0 group-hover/btn:opacity-100 transition-opacity" />
                                     <span className="absolute inset-0 relative z-10 group-hover/btn:text-white transition-colors">{loading ? "Generating..." : "Generate Identity"}</span>
                                 </button>
