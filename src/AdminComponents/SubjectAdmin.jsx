@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNotification } from "../components/Notification";
+import { useConfirm } from "../components/ConfirmModal";
 
 export default function SubjectAdmin() {
   const [subjectTopic, setSubjectTopic] = useState("");
@@ -8,6 +9,7 @@ export default function SubjectAdmin() {
   const [subImage, setSubImage] = useState(null);
   const [materialPdf, setMaterialPdf] = useState(null);
   const [qnPdf, setQnPdf] = useState(null);
+  const [editingId, setEditingId] = useState(null);
   const [item, setItem] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
@@ -18,6 +20,7 @@ export default function SubjectAdmin() {
 
   const api = import.meta.env.VITE_URL;
   const notify = useNotification();
+  const { showConfirm } = useConfirm();
 
   const handleUpload = async (e) => {
     e.preventDefault();
@@ -31,31 +34,68 @@ export default function SubjectAdmin() {
     if (qnPdf) formData.append("QnPdf", qnPdf);
 
     try {
-      const response = await fetch(`${api}/uploadSubject`, {
-        method: "POST",
+      const url = editingId ? `${api}/subjectUpdate/${editingId}` : `${api}/uploadSubject`;
+      const method = editingId ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method: method,
         body: formData,
       });
 
       if (!response.ok) throw new Error("Upload response not OK");
 
-      notify("Subject asset synchronization complete.", "success");
+      notify(editingId ? "Subject updated successfully." : "Subject asset synchronization complete.", "success");
 
-      setSubjectTopic("");
-      setSubjectDescription("");
-      setVideoUrl("");
-      setSubImage(null);
-      setMaterialPdf(null);
-      setQnPdf(null);
-      if (subImageRef.current) subImageRef.current.value = null;
-      if (materialPdfRef.current) materialPdfRef.current.value = null;
-      if (qnPdfRef.current) qnPdfRef.current.value = null;
+      resetForm();
       listItems();
     } catch (err) {
       console.error("Upload error:", err);
-      notify("Upload protocol failed.", "error");
+      notify("Protocol failed.", "error");
     } finally {
       setIsUploading(false);
     }
+  };
+
+  const handleDelete = async (id) => {
+    showConfirm(
+      "Warning: Permanent termination of this subject node will result in immediate data purge. Proceed with protocol?",
+      async () => {
+        try {
+          const response = await fetch(`${api}/subjectDelete/${id}`, {
+            method: "DELETE",
+          });
+          if (!response.ok) throw new Error("Delete failed");
+          notify("Subject node terminated.", "success");
+          listItems();
+        } catch (err) {
+          console.error("Delete error:", err);
+          notify("Termination failed.", "error");
+        }
+      },
+      "NODE_TERMINATION",
+      "danger"
+    );
+  };
+
+  const handleEdit = (list) => {
+    setEditingId(list._id);
+    setSubjectTopic(list.subjectTopic);
+    setSubjectDescription(list.subjectDescription);
+    setVideoUrl(list.VideoUrl || list.videoUrl || "");
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const resetForm = () => {
+    setEditingId(null);
+    setSubjectTopic("");
+    setSubjectDescription("");
+    setVideoUrl("");
+    setSubImage(null);
+    setMaterialPdf(null);
+    setQnPdf(null);
+    if (subImageRef.current) subImageRef.current.value = null;
+    if (materialPdfRef.current) materialPdfRef.current.value = null;
+    if (qnPdfRef.current) qnPdfRef.current.value = null;
   };
 
   const listItems = () => {
@@ -86,7 +126,7 @@ export default function SubjectAdmin() {
 
   return (
     <div className="animate-fade-in space-y-12">
-      <div className="grid grid-cols-1 xl:grid-cols-[450px_1fr] gap-12 items-start">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-12 items-start">
 
         {/* Upload Form: Asset Injector */}
         <div className="space-y-8">
@@ -159,8 +199,18 @@ export default function SubjectAdmin() {
               disabled={isUploading}
               className="w-full py-5 bg-cyan-500 text-black font-black uppercase text-xs tracking-[0.3em] rounded-2xl hover:bg-white transition-all active:scale-95 disabled:opacity-50 shadow-[0_0_20px_rgba(34,211,238,0.2)]"
             >
-              {isUploading ? "INJECTING..." : "EXECUTE_DEPLOYMENT"}
+              {isUploading ? "INJECTING..." : editingId ? "CONFIRM_MODIFICATION" : "EXECUTE_DEPLOYMENT"}
             </button>
+
+            {editingId && (
+              <button
+                type="button"
+                onClick={resetForm}
+                className="w-full py-3 bg-white/5 text-white/40 font-black uppercase text-[10px] tracking-[0.2em] rounded-xl hover:bg-white/10 transition-all mt-2"
+              >
+                CANCEL_OPERATION
+              </button>
+            )}
           </form>
         </div>
 
@@ -176,7 +226,7 @@ export default function SubjectAdmin() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-h-[800px] overflow-y-auto custom-scroll pr-4">
+          <div className="grid grid-cols-1 gap-6 max-h-[800px] overflow-y-auto custom-scroll pr-4">
             {item.map((list, index) => (
               <div key={index} className="group p-6 rounded-3xl bg-white/[0.02] border border-white/5 space-y-6 flex flex-col justify-between hover:border-cyan-500/30 transition-all duration-500 animate-fade-in relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-4 opacity-5 font-mono text-[8px] text-white">ID_{list._id?.slice(-4)}</div>
@@ -205,7 +255,10 @@ export default function SubjectAdmin() {
                 </div>
 
                 <div className="flex items-center justify-between text-[8px] font-black text-slate-600 uppercase tracking-widest pt-2">
-                  <span>Node_{index + 1}</span>
+                  <div className="flex gap-4">
+                    <button onClick={() => handleEdit(list)} className="text-cyan-500 hover:text-white transition-colors cursor-pointer">MODIFY_NODE</button>
+                    <button onClick={() => handleDelete(list._id)} className="text-red-500 hover:text-white transition-colors cursor-pointer">TERMINATE_LOG</button>
+                  </div>
                   <span>Registry: Internal</span>
                 </div>
               </div>
