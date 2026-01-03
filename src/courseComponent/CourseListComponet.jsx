@@ -11,7 +11,7 @@ export default function BackendCourseComponent() {
       <div className="space-y-2">
         <div className="flex items-center gap-3">
           <div className="h-[1px] w-8 bg-indigo-500" />
-          <p className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.4em]">Section_03</p>
+          <p className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.4em]">Course_Section</p>
         </div>
         <h1 className="text-4xl md:text-5xl font-heading font-black text-white uppercase tracking-tighter leading-none">
           ACADEMY <span className="text-indigo-400">MATRIX</span>
